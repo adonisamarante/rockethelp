@@ -1,9 +1,13 @@
 # RocketHelp
 
+Study project done following the Rocketseat's "Ignite Lab React Native" course.
 
 # What was used in this project
 
-Aula 2
+Lesson 1
+
+
+Lesson 2
 
 - Expo
 - Typescript
