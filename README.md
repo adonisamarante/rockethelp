@@ -14,3 +14,9 @@ Lesson 2
 - NativeBase
 - react-native-svg-transformer (for svg images)
 - phosphor-react-native (for icons)
+
+Lesson 3
+
+- yarn add react-navigation
+- expo install react-native-screens
+- yarn add @react-navigation/native-stack
