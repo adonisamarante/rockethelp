@@ -20,3 +20,8 @@ Lesson 3
 - yarn add react-navigation
 - expo install react-native-screens
 - yarn add @react-navigation/native-stack
+
+Lesson 4
+
+- yarn add @react-native-firebase/app (to connect the application with firebase)
+- 
