@@ -24,4 +24,5 @@ Lesson 3
 Lesson 4
 
 - yarn add @react-native-firebase/app (to connect the application with firebase)
-- 
+- yarn add @react-native-firebase/firestore
+- yarn add @react-native-firebase/auth
