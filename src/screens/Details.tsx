@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react';
-import { VStack, Text } from 'native-base';
-import { useRoute } from '@react-navigation/native';
+import { Alert } from 'react-native';
+import { VStack, Text, HStack, useTheme, ScrollView, Box } from 'native-base';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import { dateFormat } from '../utils/firestoreDateFormat';
+import { OrderFirestoreDTO } from '../DTOs/OrderFirestoreDTO';
+import { CircleWavyCheck, Hourglass, DesktopTower, Clipboard } from 'phosphor-react-native';
 
 import { Header } from '../components/Header';
+import { Input } from '../components/Input';
+import { Button } from '../components/Button';
 import { OrderProps } from '../components/Order';
-import { OrderFirestoreDTO } from '../DTOs/OrderFirestoreDTO';
+import { Loading } from '../components/Loading';
+import { CardDetails } from '../components/CardDetails';
 
 type RouteParams = {
   orderId: string;
@@ -23,8 +29,34 @@ export function Details() {
   const [isLoading, setIsLoading] = useState(true);
   const [order, setOrder] = useState<OrderDetails>({} as OrderDetails)
 
+  const navigation = useNavigation();
   const route = useRoute();
+  const { colors } = useTheme();
+
   const { orderId } = route.params as RouteParams;
+
+  function handleOrderClose() {
+    if (!solution) {
+      return Alert.alert('Solicitação', 'Informa a solução para encerrar a solicitação');
+    }
+
+    firestore()
+    .collection<OrderFirestoreDTO>('orders')
+    .doc(orderId)
+    .update({
+      status: 'closed',
+      solution,
+      closed_at: firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+      Alert.alert('Solicitação', 'Solicitação encerrada.')
+      navigation.goBack();
+    })
+    .catch((error) => {
+      console.log(error);
+      Alert.alert('Solicitação', 'Não foi possível encerrar a solicitação.')
+    })
+  }
 
   useEffect(() => {
     firestore()
@@ -50,12 +82,74 @@ export function Details() {
     })
   }, []);
 
+  if (isLoading) {
+    return <Loading />
+  }
+
   return (
     <VStack flex={1} bg='gray.700'>
-      <Header title='Solicitação' />
-      <Text color='white'>
-        {orderId}
-      </Text>
+      <Box px={6} bg='gray.600'>
+        <Header title='Solicitação' />
+      </Box>
+      
+      <HStack bg='gray.500' justifyContent='center' p={4}>
+        {
+          order.status === 'closed'
+          ? <CircleWavyCheck size={22} color={colors.green[300]} />
+          : <Hourglass size={22} color={colors.secondary[700]} />
+        }
+
+        <Text
+          fontSize='sm'
+          color={order.status === 'closed' ? colors.green[300] : colors.secondary[700]}
+          ml={2}
+          textTransform='uppercase'
+        >
+          {order.status === 'closed' ? 'finalizado' : 'em andamento'}
+        </Text>
+
+        <ScrollView mx={5} showsVerticalScrollIndicator={false}>
+          <CardDetails
+            title='equipamento'
+            description={`Patrimônio ${order.patrimony}`}
+            icon={DesktopTower}
+          />
+
+          <CardDetails
+            title='descrição do problema'
+            description={order.description}
+            icon={Clipboard}
+            footer={`Registrado em ${order.when}`}
+          />
+
+          <CardDetails
+            title='solução'
+            icon={CircleWavyCheck}
+            description={order.solution}
+            footer={order.closed && `Encerrado em ${order.closed}`}
+          >
+            {
+              order.status === 'open' &&
+              <Input 
+                placeholder='Dercição da solução'
+                onChangeText={setSolution}
+                textAlignVertical='top'
+                multiline
+                h={24}
+              />
+            }
+          </CardDetails>
+        </ScrollView>
+
+        {
+          order.status === 'open' && 
+          <Button
+            title='Encerrar solicitação'
+            onPress={handleOrderClose}
+            m={5}
+          />
+        }
+      </HStack>
     </VStack>
   );
 }
